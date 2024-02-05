@@ -17,11 +17,11 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 @app.route('/get_answer', methods=['GET'])
 def get_answer():
     try:
-        # Get the text input from the request
+        
         text_input = request.args.get('text')
         print("Question :: ", text_input)
 
-        # Use TextLoader to load text from a local file
+        # Use TextLoader to load text from a local file - YOUR OWN DATA
         text_loader = TextLoader("json_data.txt")
         docs = text_loader.load()
 
@@ -29,9 +29,8 @@ def get_answer():
         splits = text_splitter.split_documents(docs)
         vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
 
-        # Retrieve and generate using the relevant snippets of the text
+        
         retriever = vectorstore.as_retriever()
-        # Replace "rlm/rag-prompt" with the actual path to your RAG model prompt
         prompt = hub.pull("rlm/rag-prompt")
         llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
@@ -49,12 +48,10 @@ def get_answer():
 
         print("RAG OUTPUT :: ", response_generate)
 
-        # Extract the generated response from OpenAI
         generated_text = response_generate.content if hasattr(response_generate, 'content') else str(response_generate)
 
         vectorstore.delete_collection()
 
-        # Return the generated response as JSON
         return jsonify({'answer': generated_text})
 
     except Exception as e:
